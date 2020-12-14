@@ -18,7 +18,7 @@ jobs:
         include:
           - build: linux-stable
             ghc: '8.8.4'
-            spec: '0.14.0'
+            spec: 'joachim/impl-settings'
             os: ubuntu-latest
             rust: stable
 
