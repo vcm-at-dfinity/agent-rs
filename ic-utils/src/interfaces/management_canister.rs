@@ -8,7 +8,7 @@ use std::fmt::Debug;
 
 pub mod attributes;
 pub mod builders;
-pub use builders::{CreateCanisterBuilder, InstallCodeBuilder};
+pub use builders::{CreateCanisterBuilder, InstallCodeBuilder, UpdateCanisterBuilder};
 use std::convert::From;
 
 #[derive(Debug, Clone, Copy, Ord, PartialOrd, Eq, PartialEq)]
@@ -42,10 +42,17 @@ impl ManagementCanister {
 #[derive(Clone, Debug, Deserialize)]
 pub struct StatusCallResult {
     pub status: CanisterStatus,
+    pub settings: DefiniteCanisterSettings,
     pub module_hash: Option<Vec<u8>>,
-    pub controller: Principal,
     pub memory_size: candid::Nat,
     pub cycles: candid::Nat,
+}
+
+#[derive(Clone, Debug, Deserialize)]
+pub struct DefiniteCanisterSettings {
+    pub controller: Principal,
+    pub compute_allocation: candid::Nat,
+    pub memory_allocation: candid::Nat,
 }
 
 impl std::fmt::Display for StatusCallResult {
@@ -140,10 +147,21 @@ impl<'agent> Canister<'agent, ManagementCanister> {
     pub fn provisional_create_canister_with_cycles<'canister: 'agent>(
         &'canister self,
         amount: Option<u64>,
+        controller: Option<Principal>,
+        compute_allocation: Option<attributes::ComputeAllocation>,
+        memory_allocation: Option<attributes::MemoryAllocation>,
     ) -> impl 'agent + AsyncCall<(Principal,)> {
+        #[derive(candid::CandidType)]
+        struct CanisterSettings {
+            controller: Option<Principal>,
+            compute_allocation: Option<candid::Nat>,
+            memory_allocation: Option<candid::Nat>,
+        }
+
         #[derive(CandidType)]
         struct Argument {
             amount: Option<candid::Nat>,
+            settings: CanisterSettings,
         }
 
         #[derive(Deserialize)]
@@ -154,6 +172,15 @@ impl<'agent> Canister<'agent, ManagementCanister> {
         self.update_("provisional_create_canister_with_cycles")
             .with_arg(Argument {
                 amount: amount.map(candid::Nat::from),
+                settings: CanisterSettings {
+                    controller,
+                    compute_allocation: compute_allocation
+                        .map(|x| u8::from(x))
+                        .map(|x| candid::Nat::from(x)),
+                    memory_allocation: memory_allocation
+                        .map(|x| u64::from(x))
+                        .map(|x| candid::Nat::from(x)),
+                },
             })
             .build()
             .map(|result: (Out,)| (result.0.canister_id,))
@@ -232,5 +259,13 @@ impl<'agent> Canister<'agent, ManagementCanister> {
         wasm: &'canister [u8],
     ) -> InstallCodeBuilder<'agent, 'canister, ManagementCanister> {
         InstallCodeBuilder::builder(self, canister_id, wasm)
+    }
+
+    /// Update one or more of a canister settings (i.e its controller, compute allocation, or memory allocation.)
+    pub fn update_canister_settings<'canister: 'agent>(
+        &'canister self,
+        canister_id: &Principal,
+    ) -> UpdateCanisterBuilder<'agent, 'canister, ManagementCanister> {
+        UpdateCanisterBuilder::builder(self, canister_id)
     }
 }

@@ -154,27 +154,29 @@ mod management_canister {
                 .await;
             assert!(matches!(result, Err(AgentError::ReplicaError { .. })));
 
-            // // Change controller.
-            // ic00.set_controller(&canister_id, &other_agent_principal)
-            //     .call_and_wait(create_waiter())
-            //     .await?;
+            // Change controller.
+            ic00.update_canister_settings(&canister_id)
+                .with_controller(other_agent_principal.clone())
+                .call_and_wait(create_waiter())
+                .await?;
 
-            // // Change controller with wrong controller should fail
-            // let result = ic00
-            //     .set_controller(&canister_id, &other_agent_principal)
-            //     .call_and_wait(create_waiter())
-            //     .await;
-            // assert!(matches!(result, Err(AgentError::ReplicaError {
-            //         reject_code: 5,
-            //         reject_message,
-            //     }) if reject_message.contains("is not authorized to manage canister")));
+            // Change controller with wrong controller should fail
+            let result = ic00
+                .update_canister_settings(&canister_id)
+                .with_controller(other_agent_principal.clone())
+                .call_and_wait(create_waiter())
+                .await;
+            assert!(matches!(result, Err(AgentError::ReplicaError {
+                    reject_code: 5,
+                    reject_message,
+                }) if reject_message.contains("is not authorized to manage canister")));
 
-            // // Reinstall as new controller
-            // other_ic00
-            //     .install_code(&canister_id, &canister_wasm)
-            //     .with_mode(InstallMode::Reinstall)
-            //     .call_and_wait(create_waiter())
-            //     .await?;
+            // Reinstall as new controller
+            other_ic00
+                .install_code(&canister_id, &canister_wasm)
+                .with_mode(InstallMode::Reinstall)
+                .call_and_wait(create_waiter())
+                .await?;
 
             // Reinstall on empty should succeed.
             let (canister_id_2,) = ic00
@@ -200,7 +202,7 @@ mod management_canister {
                 .call_and_wait(create_waiter())
                 .await?;
             assert_eq!(result.0.status, CanisterStatus::Running);
-            assert_eq!(result.0.controller, other_agent_principal);
+            assert_eq!(result.0.settings.controller, other_agent_principal);
             assert_eq!(result.0.module_hash, None);
 
             // Install wasm.
@@ -483,7 +485,7 @@ mod management_canister {
             // cycle balance is max_canister_balance when creating with
             // provisional_create_canister_with_cycles(None)
             let (canister_id_1,) = ic00
-                .provisional_create_canister_with_cycles(None)
+                .provisional_create_canister_with_cycles(None, None, None, None)
                 .call_and_wait(create_waiter())
                 .await?;
             let result = ic00
@@ -496,7 +498,7 @@ mod management_canister {
             // provisional_create_canister_with_cycles call
             let amount: u64 = 1 << 40; // 1099511627776
             let (canister_id_2,) = ic00
-                .provisional_create_canister_with_cycles(Some(amount))
+                .provisional_create_canister_with_cycles(Some(amount), None, None, None)
                 .call_and_wait(create_waiter())
                 .await?;
             let result = ic00
