@@ -3,7 +3,6 @@ use delay::Delay;
 use ic_agent::export::Principal;
 use ic_agent::identity::BasicIdentity;
 use ic_agent::Agent;
-use ic_utils::call::AsyncCall;
 use ic_utils::interfaces::ManagementCanister;
 use ring::signature::Ed25519KeyPair;
 use serde::Deserialize;
