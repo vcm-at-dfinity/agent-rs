@@ -174,12 +174,8 @@ impl<'agent> Canister<'agent, ManagementCanister> {
                 amount: amount.map(candid::Nat::from),
                 settings: CanisterSettings {
                     controller,
-                    compute_allocation: compute_allocation
-                        .map(|x| u8::from(x))
-                        .map(|x| candid::Nat::from(x)),
-                    memory_allocation: memory_allocation
-                        .map(|x| u64::from(x))
-                        .map(|x| candid::Nat::from(x)),
+                    compute_allocation: compute_allocation.map(u8::from).map(candid::Nat::from),
+                    memory_allocation: memory_allocation.map(u64::from).map(candid::Nat::from),
                 },
             })
             .build()
