@@ -237,7 +237,7 @@ impl<'agent, 'canister: 'agent, T> InstallCodeBuilder<'agent, 'canister, T> {
                 compute_allocation,
                 memory_allocation,
             })
-            .build())
+            .build_with_expiry(Expiry::after(self.agent.ingress_expiry_duration)))
     }
 
     /// Make a call. This is equivalent to the [AsyncCall::call].

@@ -107,7 +107,7 @@ pub struct Agent {
     client: reqwest::Client,
     identity: Box<dyn Identity + Send + Sync>,
     password_manager: Option<Box<dyn PasswordManager + Send + Sync>>,
-    ingress_expiry_duration: Duration,
+    pub(crate) ingress_expiry_duration: Duration,
     root_key: RwLock<Option<Vec<u8>>>,
 }
 
