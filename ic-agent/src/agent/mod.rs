@@ -144,7 +144,7 @@ pub trait ReplicaV1Transport {
 pub struct Agent {
     nonce_factory: NonceFactory,
     identity: Arc<dyn Identity + Send + Sync>,
-    ingress_expiry_duration: Duration,
+    pub(crate) ingress_expiry_duration: Duration,
     root_key: Arc<RwLock<Option<Vec<u8>>>>,
     transport: Arc<dyn ReplicaV1Transport + Send + Sync>,
 }

@@ -364,7 +364,7 @@ impl<'agent> Canister<'agent, ManagementCanister> {
             .with_arg(Argument {
                 amount: amount.map(candid::Nat::from),
             })
-            .build()
+            .build_with_expiry(Expiry::after(self.agent.ingress_expiry_duration))
             .map(|result: (Out,)| (result.0.canister_id,))
     }
 

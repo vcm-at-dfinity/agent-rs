@@ -341,6 +341,22 @@ impl<'agent, 'canister: 'agent, Interface> AsyncCallBuilder<'agent, 'canister, I
             phantom_out: std::marker::PhantomData,
         }
     }
+
+    /// Builds an [AsyncCaller] from this builder's state.
+    pub fn build_with_expiry<Output>(self, expiry: Expiry) -> AsyncCaller<'canister, Output>
+    where
+        Output: for<'de> ArgumentDecoder<'de> + Send + Sync,
+    {
+        let c = self.canister;
+        AsyncCaller {
+            agent: c.agent,
+            canister_id: c.canister_id.clone(),
+            method_name: self.method_name.clone(),
+            arg: self.arg.serialize(),
+            expiry,
+            phantom_out: std::marker::PhantomData,
+        }
+    }
 }
 
 #[cfg(test)]
