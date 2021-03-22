@@ -1,4 +1,4 @@
-use crate::call::{AsyncCaller, SyncCaller};
+use crate::call::{AsyncCaller, Expiry, SyncCaller};
 use candid::de::ArgumentDecoder;
 use candid::ser::IDLBuilder;
 use candid::CandidType;

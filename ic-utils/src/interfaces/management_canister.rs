@@ -1,4 +1,4 @@
-use crate::call::AsyncCall;
+use crate::call::{AsyncCall, Expiry};
 use crate::canister::{Argument, CanisterBuilder};
 use crate::Canister;
 use async_trait::async_trait;
@@ -237,7 +237,7 @@ impl<'agent, 'canister: 'agent, T> InstallCodeBuilder<'agent, 'canister, T> {
                 compute_allocation,
                 memory_allocation,
             })
-            .build_with_expiry(Expiry::after(self.agent.ingress_expiry_duration)))
+            .build_with_expiry(Expiry::after(self.canister.agent.ingress_expiry_duration)))
     }
 
     /// Make a call. This is equivalent to the [AsyncCall::call].
