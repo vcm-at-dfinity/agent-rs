@@ -203,6 +203,11 @@ impl Agent {
         &self,
         http_request: reqwest::Request,
     ) -> Result<(reqwest::StatusCode, reqwest::header::HeaderMap, Vec<u8>), AgentError> {
+        if let Some(body) = http_request.body() {
+            println!("Requesting: {:?}", hex::encode(body.as_bytes().unwrap()));
+            println!();
+            println!();
+        }
         let response = self
             .client
             .execute(
